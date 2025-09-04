@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sabores-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sabores_conectados
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - sabores-network
+
+  eureka-server:
+    build: ./server/Server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - sabores-network
+    depends_on:
+      - mysql
+
+  cardapio-service:
+    build: ./cardapio/Cardapio
+    container_name: cardapio-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/cardapio?createDatabaseIfNotExist=true
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - sabores-network
+    depends_on:
+      - eureka-server
+      - mysql
+
+  pedidos-service:
+    build: ./pedidos
+    container_name: pedidos-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/pedidos?createDatabaseIfNotExist=true
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - sabores-network
+    depends_on:
+      - eureka-server
+      - mysql
+
+  pagamentos-service:
+    build: ./pagamentos/Pagamentos
+    container_name: pagamentos-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/pagamentos?createDatabaseIfNotExist=true
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - sabores-network
+    depends_on:
+      - eureka-server
+      - mysql
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/auth?createDatabaseIfNotExist=true
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - sabores-network
+    depends_on:
+      - eureka-server
+      - mysql
+
+  gateway:
+    build: ./Gateway/Gateway
+    container_name: gateway
+    ports:
+      - "8084:8084"
+    environment:
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - sabores-network
+    depends_on:
+      - eureka-server
+      - cardapio-service
+      - pedidos-service
+      - pagamentos-service
+      - auth-service
+
+volumes:
+  mysql_data:
+
+networks:
+  sabores-network:
+    driver: bridge
