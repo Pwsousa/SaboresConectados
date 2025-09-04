@@ -10,6 +10,10 @@ env:
   REGISTRY: docker.io
   IMAGE_NAME: saboresconectados
 
+defaults:
+  run:
+    working-directory: .
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -45,15 +49,46 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
+    - name: List repository structure
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Repository contents:"
+        ls -la
+        echo "Checking modules:"
+        ls -la Cardapio/ || echo "Cardapio not found"
+        ls -la Pedidos/ || echo "Pedidos not found"
+        ls -la Pagamentos/ || echo "Pagamentos not found"
+        ls -la Gateway/ || echo "Gateway not found"
+        ls -la Server/server/ || echo "Server/server not found"
+        ls -la integration-test/ || echo "integration-test not found"
+
+    - name: Validate Maven project structure
+      run: mvn validate
+
     - name: Run unit tests
-      run: mvn clean test -Dspring.profiles.active=test
+      run: |
+        # Compile each module individually to isolate issues
+        mvn clean compile -pl Cardapio -am
+        mvn clean compile -pl Pedidos -am
+        mvn clean compile -pl Pagamentos -am
+        mvn clean compile -pl Gateway -am
+        mvn clean compile -pl Server/server -am
+        
+        # Run tests for each module
+        mvn test -pl Cardapio -Dspring.profiles.active=test
+        mvn test -pl Pedidos -Dspring.profiles.active=test
+        mvn test -pl Pagamentos -Dspring.profiles.active=test
+        mvn test -pl Gateway -Dspring.profiles.active=test
+        mvn test -pl Server/server -Dspring.profiles.active=test
       env:
         SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/test_db?createDatabaseIfNotExist=true
         SPRING_DATASOURCE_USERNAME: root
         SPRING_DATASOURCE_PASSWORD: root
 
     - name: Run integration tests
-      run: mvn verify -Dspring.profiles.active=test
+      run: |
+        # Build integration-test module with dependencies
+        mvn clean verify -pl integration-test -am -Dspring.profiles.active=test
       env:
         SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/test_db?createDatabaseIfNotExist=true
         SPRING_DATASOURCE_USERNAME: root
@@ -74,7 +109,22 @@ jobs:
     
     strategy:
       matrix:
-        service: [eureka-server, gateway, cardapio-service, pedidos-service, pagamentos-service]
+        include:
+          - service: eureka-server
+            context: Server
+            dockerfile: Server/Dockerfile
+          - service: gateway
+            context: Gateway
+            dockerfile: Gateway/Dockerfile
+          - service: cardapio-service
+            context: Cardapio
+            dockerfile: Cardapio/Dockerfile
+          - service: pedidos-service
+            context: Pedidos
+            dockerfile: Pedidos/Dockerfile
+          - service: pagamentos-service
+            context: Pagamentos
+            dockerfile: Pagamentos/Dockerfile
     
     steps:
     - name: Checkout code
@@ -88,6 +138,47 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Build Java modules
+      run: |
+        echo "Building module for ${{ matrix.service }}"
+        if [ "${{ matrix.service }}" = "eureka-server" ]; then
+          mvn clean package -pl Server/server -am -DskipTests
+        elif [ "${{ matrix.service }}" = "gateway" ]; then
+          mvn clean package -pl Gateway -am -DskipTests
+        elif [ "${{ matrix.service }}" = "cardapio-service" ]; then
+          mvn clean package -pl Cardapio -am -DskipTests
+        elif [ "${{ matrix.service }}" = "pedidos-service" ]; then
+          mvn clean package -pl Pedidos -am -DskipTests
+        elif [ "${{ matrix.service }}" = "pagamentos-service" ]; then
+          mvn clean package -pl Pagamentos -am -DskipTests
+        fi
+
+    - name: Verify Dockerfile exists
+      run: |
+        echo "Checking Dockerfile for ${{ matrix.service }}"
+        echo "Context: ${{ matrix.context }}"
+        echo "Dockerfile: ${{ matrix.dockerfile }}"
+        ls -la ${{ matrix.context }}/
+        if [ -f "${{ matrix.dockerfile }}" ]; then
+          echo "✅ Dockerfile found"
+        else
+          echo "❌ Dockerfile not found"
+          exit 1
+        fi
 
     - name: Extract metadata
       id: meta
@@ -103,8 +194,8 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: .
-        file: ./${{ matrix.service == 'eureka-server' && 'server/Server/Dockerfile' || matrix.service == 'gateway' && 'Gateway/Gateway/Dockerfile' || matrix.service == 'cardapio-service' && 'cardapio/Cardapio/Dockerfile' || matrix.service == 'pedidos-service' && 'pedidos/Dockerfile' || 'pagamentos/Pagamentos/Dockerfile' }}
+        context: ${{ matrix.context }}
+        file: ${{ matrix.dockerfile }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
