@@ -186,20 +186,11 @@ docker-compose -f docker-compose.test.yml down
 ```
 SaboresConectados/
 ├── .github/workflows/          # GitHub Actions
-├── auth-service/               # Microserviço de autenticação
 ├── cardapio/Cardapio/          # Microserviço de cardápio
 ├── Gateway/Gateway/            # API Gateway
-├── integration-tests/          # Testes de integração
-├── k8s/                        # Manifestos Kubernetes
 ├── pagamentos/Pagamentos/      # Microserviço de pagamentos
 ├── pedidos/                    # Microserviço de pedidos
-├── server/Server/              # Eureka Server
-├── scripts/                    # Scripts de deploy
-├── config/                     # Configurações
-├── docker-compose.yml          # Docker Compose desenvolvimento
-├── docker-compose.staging.yml  # Docker Compose staging
-├── docker-compose.prod.yml     # Docker Compose produção
-├── docker-compose.test.yml     # Docker Compose testes
+├── server/                     # Eureka Server
 └── pom.xml                     # Maven parent
 ```
 
