@@ -1,0 +1,322 @@
+# Cardapio Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cardapio-service
+  namespace: sabores-conectados
+  labels:
+    app: cardapio-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cardapio-service
+  template:
+    metadata:
+      labels:
+        app: cardapio-service
+    spec:
+      containers:
+      - name: cardapio-service
+        image: saboresconectados/cardapio-service:latest
+        ports:
+        - containerPort: 8082
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: SPRING_PROFILES_ACTIVE
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://mysql:3306/cardapio?createDatabaseIfNotExist=true"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "root"
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sabores-secrets
+              key: mysql-root-password
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+        - name: JAVA_OPTS
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: JAVA_OPTS
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8082
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8082
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cardapio-service
+  namespace: sabores-conectados
+spec:
+  selector:
+    app: cardapio-service
+  ports:
+  - port: 8082
+    targetPort: 8082
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cardapio-service-hpa
+  namespace: sabores-conectados
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cardapio-service
+  minReplicas: 3
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Pedidos Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pedidos-service
+  namespace: sabores-conectados
+  labels:
+    app: pedidos-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pedidos-service
+  template:
+    metadata:
+      labels:
+        app: pedidos-service
+    spec:
+      containers:
+      - name: pedidos-service
+        image: saboresconectados/pedidos-service:latest
+        ports:
+        - containerPort: 8083
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: SPRING_PROFILES_ACTIVE
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://mysql:3306/pedidos?createDatabaseIfNotExist=true"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "root"
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sabores-secrets
+              key: mysql-root-password
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+        - name: JAVA_OPTS
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: JAVA_OPTS
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8083
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8083
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pedidos-service
+  namespace: sabores-conectados
+spec:
+  selector:
+    app: pedidos-service
+  ports:
+  - port: 8083
+    targetPort: 8083
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pedidos-service-hpa
+  namespace: sabores-conectados
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pedidos-service
+  minReplicas: 3
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Pagamentos Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pagamentos-service
+  namespace: sabores-conectados
+  labels:
+    app: pagamentos-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pagamentos-service
+  template:
+    metadata:
+      labels:
+        app: pagamentos-service
+    spec:
+      containers:
+      - name: pagamentos-service
+        image: saboresconectados/pagamentos-service:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: SPRING_PROFILES_ACTIVE
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://mysql:3306/pagamentos?createDatabaseIfNotExist=true"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "root"
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sabores-secrets
+              key: mysql-root-password
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+        - name: JAVA_OPTS
+          valueFrom:
+            configMapKeyRef:
+              name: sabores-config
+              key: JAVA_OPTS
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pagamentos-service
+  namespace: sabores-conectados
+spec:
+  selector:
+    app: pagamentos-service
+  ports:
+  - port: 8081
+    targetPort: 8081
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pagamentos-service-hpa
+  namespace: sabores-conectados
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pagamentos-service
+  minReplicas: 3
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
