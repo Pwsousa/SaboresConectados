@@ -20,7 +20,7 @@ echo  Docker Username: %DOCKER_USERNAME%
 REM Verificar se Docker está instalado
 docker --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ Docker não está instalado
+    echo  Docker não está instalado
     pause
     exit /b 1
 )
@@ -120,7 +120,7 @@ kubectl apply -f k8s\microservices.yaml
 kubectl apply -f k8s\gateway.yaml
 
 REM Aguardar deployments ficarem prontos
-echo ⏳ Aguardando deployments ficarem prontos...
+echo  Aguardando deployments ficarem prontos...
 kubectl wait --for=condition=available --timeout=300s deployment/mysql -n sabores-conectados
 kubectl wait --for=condition=available --timeout=300s deployment/eureka-server -n sabores-conectados
 kubectl wait --for=condition=available --timeout=300s deployment/cardapio-service -n sabores-conectados
