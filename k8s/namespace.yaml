@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sabores-conectados
+  labels:
+    name: sabores-conectados
+    environment: production
