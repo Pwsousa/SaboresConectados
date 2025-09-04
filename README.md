@@ -2,23 +2,84 @@
 
 ## 🍕 Visão Geral
 
-Sistema de microserviços para restaurante desenvolvido com Spring Boot, Spring Cloud e Docker, implementando entrega contínua (CD) e orquestração com Kubernetes.
+Sistema completo de microserviços para restaurante desenvolvido com Spring Boot, Spring Cloud e Docker, implementando entrega contínua (CD) e orquestração com Kubernetes. O sistema suporta múltiplos clientes (IoT e Mobile) conectando-se através de um API Gateway centralizado.
 
-## 🏗️ Arquitetura
+## 🏗️ Arquitetura do Sistema
 
-### Microserviços
-- **Eureka Server** (8761): Service Discovery
-- **Gateway** (8084): API Gateway
+### 📱 Clientes e Interfaces
+
+#### **Cliente IoT (Dispositivos Inteligentes)**
+- **Dispositivos**: Terminais de pedido, tablets de mesa, sensores de cozinha
+- **Tecnologia**: ESP32/Arduino com conectividade WiFi
+- **Design**: [Circuito IoT - Cirkit Designer](https://app.cirkitdesigner.com/project/a7a1f965-5f03-4754-95bc-00742a8c262e)
+- **Funcionalidades**:
+  - Interface touch para pedidos
+  - Integração com sensores de temperatura
+  - Notificações em tempo real
+  - Status de pedidos em tempo real
+
+#### **Cliente Mobile (Aplicativo)**
+- **Plataforma**: Android/iOS
+- **Design**: [App Mobile - Figma](https://www.figma.com/design/8Yjrv8fOo9Bo29TMVmBsKP/App-do-restaurante?node-id=1-2&p=f)
+- **Funcionalidades**:
+  - Cardápio digital interativo
+  - Sistema de pedidos
+  - Pagamento integrado
+  - Histórico de pedidos
+  - Avaliações e feedback
+
+### 🔄 Fluxo de Comunicação
+
+```
+[Cliente IoT] ──┐
+                ├──► [API Gateway:8084] ──► [Eureka Server:8761]
+[Cliente Mobile] ──┘                           │
+                                               ▼
+                                    [Microserviços]
+                                    ├── Cardapio:8082
+                                    ├── Pedidos:8083
+                                    ├── Pagamentos:8081
+                                    └── Auth:8085
+```
+
+### 📡 Protocolos de Comunicação
+
+#### **Cliente IoT → Gateway**
+- **HTTP REST**: Requisições de pedidos e status
+- **MQTT**: Notificações em tempo real
+- **WebSocket**: Comunicação bidirecional
+- **JSON**: Formato de dados
+
+#### **Cliente Mobile → Gateway**
+- **HTTP REST**: API principal
+- **WebSocket**: Notificações push
+- **JWT**: Autenticação segura
+- **JSON**: Formato de dados
+
+#### **Gateway → Microserviços**
+- **HTTP REST**: Comunicação interna
+- **Service Discovery**: Via Eureka
+- **Load Balancing**: Distribuição de carga
+- **Circuit Breaker**: Tolerância a falhas
+
+### 🏗️ Microserviços Backend
+
+- **Eureka Server** (8761): Service Discovery e Registry
+- **Gateway** (8084): API Gateway centralizado
 - **Cardapio Service** (8082): Gerenciamento do cardápio
 - **Pedidos Service** (8083): Gerenciamento de pedidos
 - **Pagamentos Service** (8081): Processamento de pagamentos
 - **Auth Service** (8085): Autenticação e autorização
 
-### Infraestrutura
+### 🗄️ Infraestrutura
 - **MySQL 8.0**: Banco de dados principal
 - **Prometheus**: Monitoramento e métricas
 - **Grafana**: Dashboards de monitoramento
 - **ELK Stack**: Logging centralizado
+### 🗄️ Infraestrutura IOT
+- **STM32F407VETG**: Hardware embarcado
+- **Display** LCL ILI9341 TFT
+- **ENC28J60**: Shild de conexão Ethernet
 
 ## 🚀 Entrega Contínua (CD)
 
@@ -35,9 +96,32 @@ Sistema de microserviços para restaurante desenvolvido com Spring Boot, Spring 
 - **Produção**: Deploy automático via GitHub Actions
 - **Kubernetes**: Orquestração avançada
 
-## 🛠️ Tecnologias
+## 📋 Planejamento do Projeto
 
-### Backend
+### 🎯 Objetivos
+- **Automatização completa** do processo de pedidos em restaurantes
+- **Múltiplas interfaces** de acesso (IoT e Mobile)
+- **Escalabilidade** através de microserviços
+- **Monitoramento** em tempo real
+- **Entrega contínua** automatizada
+
+### 🏢 Casos de Uso
+1. **Cliente faz pedido** via app mobile ou terminal IoT
+2. **Sistema processa** através do Gateway
+3. **Microserviços** executam lógica de negócio
+4. **Cozinha recebe** notificação em tempo real
+5. **Cliente acompanha** status do pedido
+6. **Pagamento** processado automaticamente
+
+### 🔄 Integração IoT + Mobile
+- **Sincronização** entre dispositivos
+- **Notificações push** em tempo real
+- **Dados compartilhados** entre interfaces
+- **Experiência unificada** do usuário
+
+## 🛠️ Stack Tecnológica
+
+### 🖥️ Backend (Microserviços)
 - **Java 17**
 - **Spring Boot 3.3.4**
 - **Spring Cloud 2023.0.3**
@@ -46,14 +130,29 @@ Sistema de microserviços para restaurante desenvolvido com Spring Boot, Spring 
 - **MySQL 8.0**
 - **Flyway** (migrações)
 
-### DevOps & Orquestração
+### 📱 Frontend & Clientes
+
+#### **Cliente IoT**
+- **Hardware**: Stm32,  Raspberry Pi
+- **Linguagem**: C, Arduino
+- **Comunicação**: WiFi, MQTT, HTTP REST
+- **Interface**: TFT Touch Screen, LEDs, Sensores
+- **Design**: [Circuito IoT](https://app.cirkitdesigner.com/project/a7a1f965-5f03-4754-95bc-00742a8c262e)
+
+#### **Cliente Mobile**
+- **Framework**: React Native / Flutter
+- **Plataforma**: Android & iOS
+- **Comunicação**: HTTP REST, WebSocket
+- **Design**: [App Mobile](https://www.figma.com/design/8Yjrv8fOo9Bo29TMVmBsKP/App-do-restaurante?node-id=1-2&p=f)
+
+### 🚀 DevOps & Orquestração
 - **Docker & Docker Compose**
 - **Kubernetes**
 - **GitHub Actions**
 - **Prometheus & Grafana**
 - **ELK Stack**
 
-### Testes
+### 🧪 Testes
 - **JUnit 5**
 - **Testcontainers**
 - **REST Assured**
@@ -341,6 +440,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 🎯 Próximos Passos
 
+### 🚀 Backend & Infraestrutura
 - [ ] Implementar Redis para cache distribuído
 - [ ] Adicionar API Gateway com rate limiting
 - [ ] Implementar Circuit Breaker com Resilience4j
@@ -348,6 +448,31 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 - [ ] Implementar Blue-Green Deployment
 - [ ] Adicionar Health Checks mais robustos
 - [ ] Implementar Auto-scaling baseado em métricas customizadas
+
+### 📱 Desenvolvimento de Clientes
+
+#### **Cliente IoT**
+- [ ] Implementar circuito baseado no [design Cirkit](https://app.cirkitdesigner.com/project/a7a1f965-5f03-4754-95bc-00742a8c262e)
+- [ ] Desenvolver firmware para STM32
+- [ ] Integrar Shield Ethernet
+- [ ] Implementar interface touch responsiva
+- [ ] Configurar comunicação MQTT/HTTP
+- [ ] Testes de conectividade e estabilidade
+
+#### **Cliente Mobile**
+- [ ] Desenvolver app baseado no [design Figma](https://www.figma.com/design/8Yjrv8fOo9Bo29TMVmBsKP/App-do-restaurante?node-id=1-2&p=f)
+- [ ] Implementar autenticação JWT
+- [ ] Integrar com API Gateway
+- [ ] Implementar notificações push
+- [ ] Sistema de pagamento integrado
+- [ ] Testes em dispositivos reais
+
+### 🔗 Integração
+- [ ] Sincronização em tempo real entre IoT e Mobile
+- [ ] Sistema de notificações unificado
+- [ ] Dashboard administrativo
+- [ ] Relatórios e analytics
+- [ ] Testes end-to-end completos
 
 ---
 
