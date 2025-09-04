@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sabores-config
+  namespace: sabores-conectados
+data:
+  # Database configuration
+  MYSQL_DATABASE: "sabores_conectados_prod"
+  MYSQL_ROOT_PASSWORD: "prod_password_change_me"
+  
+  # Eureka configuration
+  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+  
+  # Spring profiles
+  SPRING_PROFILES_ACTIVE: "prod"
+  
+  # JVM settings
+  JAVA_OPTS: "-Xmx1G -Xms512m"
+  
+  # Service ports
+  EUREKA_SERVER_PORT: "8761"
+  CARDAPIO_SERVICE_PORT: "8082"
+  PEDIDOS_SERVICE_PORT: "8083"
+  PAGAMENTOS_SERVICE_PORT: "8081"
+  GATEWAY_PORT: "8084"

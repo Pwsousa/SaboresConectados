@@ -1,0 +1,65 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Eureka Server
+  - job_name: 'eureka-server'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['eureka-server:8761']
+    scrape_interval: 30s
+
+  # Cardapio Service
+  - job_name: 'cardapio-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['cardapio-service:8082']
+    scrape_interval: 30s
+
+  # Pedidos Service
+  - job_name: 'pedidos-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['pedidos-service:8083']
+    scrape_interval: 30s
+
+  # Pagamentos Service
+  - job_name: 'pagamentos-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['pagamentos-service:8081']
+    scrape_interval: 30s
+
+  # Gateway
+  - job_name: 'gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['gateway:8084']
+    scrape_interval: 30s
+
+  # MySQL (se usando mysqld_exporter)
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['mysql-exporter:9104']
+    scrape_interval: 30s
+
+  # Node Exporter (métricas do sistema)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
