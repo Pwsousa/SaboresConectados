@@ -7,6 +7,7 @@
         <groupId>br.com.saboresconectados</groupId>
         <artifactId>sabores-conectados</artifactId>
         <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     
     <artifactId>integration-tests</artifactId>
