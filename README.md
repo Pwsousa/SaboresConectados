@@ -333,9 +333,9 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 📞 Contato
 
-- **Equipe de Desenvolvimento**: dev@saboresconectados.com
+- **Equipe de Desenvolvimento**: pedro.wilson@ccc.ufg.edu.com.br
 - **DevOps Team**: devops@saboresconectados.com
-- **Documentação**: [Wiki do Projeto](https://github.com/saboresconectados/wiki)
+- **Documentação**: [Wiki do Projeto](https://github.com/Pwsousa/SaboresConectados.git)
 
 ---
 
@@ -351,4 +351,3 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ---
 
-**Desenvolvido com ❤️ pela equipe Sabores Conectados**
